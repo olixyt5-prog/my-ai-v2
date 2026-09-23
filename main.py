@@ -9,7 +9,7 @@ st.title("✨ My Custom Gemini AI")
 st.write("Ask anything, explore ideas, or just chat with my new brain!")
 
 # 2. Insert Your API Key securely
-API_KEY = "AQ.Ab8RN6JMMcN9-uXx0whShqQrMVNSktkHuWpSWaCHblHfN0hnCw"
+API_KEY = "AQ.Ab8RN6IpdHz7bgsPINg7-ROVUgHxJirq__o2TRVPTAbF7pCPIQ"
 
 # Initialize the Gemini engine using the completely stable model
 client = genai.Client(api_key=API_KEY)
