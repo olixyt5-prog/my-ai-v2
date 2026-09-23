@@ -1,40 +1,34 @@
 import streamlit as st
+from google import genai
 
-# 1. Page Configuration & Title
-st.set_page_config(page_title="My Classroom AI", page_icon="🧠")
-st.title("🧠 My Custom Classroom AI")
-st.write("Type a sentence below to see my AI analyze your emotions live!")
+# 1. Page Configuration & Setup
+st.set_page_config(page_title="My Omni-AI Brain", page_icon="🤖")
+st.title("🤖 My Custom Omni-AI Brain")
+st.write("Ask my AI absolutely anything in the world!")
 
-# 2. Main Text Input Box
-user_input = st.text_input("Type something here:", placeholder="Today is an awesome day!")
+# 2. Securely Insert Your Secret Key 
+# Delete the text inside the quotes below and paste your copied key!
+API_KEY = "AQ.Ab8RN6JMMcN9-uXx0whShqQrMVNSktkHuWpSWaCHblHfN0hnCw"
 
-# 3. The Upgraded AI Brain (Rule-Based NLP Logic)
-def custom_ai_brain(text):
-    text = text.lower()
-    
-    # 🚨 CUSTOM WORD BANKS (You can add your own words inside these brackets!)
-    positive = ["good", "great", "happy", "awesome", "love", "cool", "best", "fire", "goated", "clutch"]
-    negative = ["bad", "sad", "angry", "hate", "terrible", "boring", "tired", "cooked", "mid", "L"]
-    school = ["school", "class", "teacher", "math", "science", "history", "english", "homework", "principal"]
-    
-    # AI Decision Making Tree
-    if any(word in text for word in school):
-        return "Academic Focus Mode! 📚", "blue"
-    elif any(word in text for word in positive):
-        return "Positive Mood! ✨", "green"
-    elif any(word in text for word in negative):
-        return "Negative Mood. 😢", "red"
-    elif text == "":
-        return "Awaiting Input...", "gray"
-    else:
-        return "Neutral Mood. 😐", "orange"
+# Initialize the real AI engine
+client = genai.Client(api_key=API_KEY)
 
-# 4. Process and Display Results on the Website
-status, color = custom_ai_brain(user_input)
+# 3. Main Text Input Box
+user_query = st.text_input("Ask a question:", placeholder="Why is the sky blue?")
 
-if user_input:
-    st.subheader("AI Result:")
-    if color == "blue":       st.info(status)
-    elif color == "green":    st.success(status)
-    elif color == "red":      st.error(status)
-    else:                     st.warning(status)
+# 4. Generate the Response
+if user_query:
+    with st.spinner("AI Brain thinking... 🧠"):
+        try:
+            # Tell the supercomputer brain to answer your question
+            response = client.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=user_query,
+            )
+            
+            st.subheader("AI Answer:")
+            st.write(response.text)
+            
+        except Exception as e:
+            st.error("Oops! Make sure you pasted your correct API Key inside the code.")
+
