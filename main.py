@@ -1,34 +1,51 @@
 import streamlit as st
 from google import genai
 
-# 1. Page Configuration & Setup
-st.set_page_config(page_title="My Omni-AI Brain", page_icon="🤖")
-st.title("🤖 My Custom Omni-AI Brain")
-st.write("Ask my AI absolutely anything in the world!")
+# 1. Page Configuration & Gemini Styling Layout
+st.set_page_config(page_title="Gemini AI Chatbot", page_icon="✨", layout="centered")
 
-# 2. Securely Insert Your Secret Key 
-# Delete the text inside the quotes below and paste your copied key!
+# Visual Header like Google Gemini
+st.title("✨ My Custom Gemini AI")
+st.write("Ask anything, explore ideas, or just chat with my new brain!")
+
+# 2. Insert Your API Key securely
 API_KEY = "AQ.Ab8RN6JMMcN9-uXx0whShqQrMVNSktkHuWpSWaCHblHfN0hnCw"
 
-# Initialize the real AI engine
+# Initialize the Gemini engine using the completely stable model
 client = genai.Client(api_key=API_KEY)
 
-# 3. Main Text Input Box
-user_query = st.text_input("Ask a question:", placeholder="Why is the sky blue?")
+# 3. Create a Permanent Memory/Chat History Storage
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-# 4. Generate the Response
-if user_query:
-    with st.spinner("AI Brain thinking... 🧠"):
-        try:
-            # Tell the supercomputer brain to answer your question
-            response = client.models.generate_content(
-                model='gemini-1.5-flash',
-                contents=user_query,
-            )
-            
-            st.subheader("AI Answer:")
-            st.write(response.text)
-            
-        except Exception as e:
-            st.error("Oops! Make sure you pasted your correct API Key inside the code.")
+# Display all previous messages in clean chat bubbles on screen
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.write(message["content"])
 
+# 4. User Interaction - The Bottom Chat Input Box
+if user_prompt := st.chat_input("Ask Gemini anything..."):
+    
+    # Immediately show what the user typed in a user bubble
+    with st.chat_message("user"):
+        st.write(user_prompt)
+    st.session_state.messages.append({"role": "user", "content": user_prompt})
+
+    # Show a sleek thinking animation while generating response
+    with st.chat_message("assistant"):
+        with st.spinner("Gemini is thinking..."):
+            try:
+                # Calls the fully supported flash model
+                response = client.models.generate_content(
+                    model='gemini-1.5-flash',
+                    contents=user_prompt,
+                )
+                
+                ai_reply = response.text
+                st.write(ai_reply)
+                
+                # Save the AI's reply to the chat memory
+                st.session_state.messages.append({"role": "assistant", "content": ai_reply})
+                
+            except Exception as e:
+                st.error("Connection Error! Double-check your API Key string inside the code.")
