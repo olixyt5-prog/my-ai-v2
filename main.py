@@ -22,7 +22,7 @@ if user_query:
         try:
             # Tell the supercomputer brain to answer your question
             response = client.models.generate_content(
-                model='gemini-2.5-flash',
+                model='gemini-1.5-flash',
                 contents=user_query,
             )
             
