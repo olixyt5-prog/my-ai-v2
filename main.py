@@ -1,19 +1,13 @@
 import streamlit as st
-import google.generativeai as genai
+import httpx
 
-# 1. Page Configuration & Gemini Styling Layout
-st.set_page_config(page_title="Gemini AI Chatbot", page_icon="✨", layout="centered")
+# 1. Page Configuration & Jarvis Theme Styling
+st.set_page_config(page_title="JARVIS Assistant", page_icon="🤖", layout="centered")
 
-st.title("✨ My Custom Gemini AI")
-st.write("Ask anything, explore ideas, or just chat with my new brain!")
+st.markdown("<h1 style='text-align: center; color: #00e5ff;'>🤖 J.A.R.V.I.S.</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #8ab4f8;'>System online. Awaiting your instructions, sir.</p>", unsafe_allow_html=True)
 
-# 2. Corrected API Key String
-API_KEY = "AQ.Ab8RN6K_Ai5C6HUadTGcd1mCgABuG8jdURS8tHBBKUrGMnnjTA"
-
-# Configure the core engine
-genai.configure(api_key=API_KEY)
-
-# 3. Create a Permanent Memory/Chat History Storage
+# 2. Permanent Memory/Chat History Storage
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
@@ -22,27 +16,29 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.write(message["content"])
 
-# 4. User Interaction - The Bottom Chat Input Box
-if user_prompt := st.chat_input("Ask Gemini anything..."):
+# 3. User Interaction - The Chat Input Box
+if user_prompt := st.chat_input("Enter command for Jarvis..."):
     
     # Immediately show what the user typed in a user bubble
     with st.chat_message("user"):
         st.write(user_prompt)
     st.session_state.messages.append({"role": "user", "content": user_prompt})
 
-    # Show a sleek thinking animation while generating response
+    # Show a sleek Jarvis thinking animation while generating response
     with st.chat_message("assistant"):
-        with st.spinner("Gemini is thinking..."):
+        with st.spinner("Analyzing data streams... 📡"):
             try:
-                # Call the completely stable chat engine model
-                model = genai.GenerativeModel('gemini-1.5-flash')
-                response = model.generate_content(user_prompt)
+                # Request a response from the public unblocked system
+                response = httpx.get("https://pollinations.ai", params={
+                    "prompt": user_prompt, 
+                    "system": "You are JARVIS, a highly advanced, intelligent, and polite AI assistant like Iron Man's AI. Address the user as 'Sir'."
+                })
                 
-                ai_reply = response.text
-                st.write(ai_reply)
+                jarvis_reply = response.text
+                st.write(jarvis_reply)
                 
-                # Save the AI's reply to the chat memory
-                st.session_state.messages.append({"role": "assistant", "content": ai_reply})
+                # Save Jarvis's reply to the chat memory
+                st.session_state.messages.append({"role": "assistant", "content": jarvis_reply})
                 
             except Exception as e:
-                st.error(f"Error connecting to AI engine: {e}")
+                st.error("System Override Detected. Unable to connect to core engine.")
