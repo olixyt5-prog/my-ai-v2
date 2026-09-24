@@ -8,7 +8,7 @@ st.title("✨ My Custom Gemini AI")
 st.write("Ask anything, explore ideas, or just chat with my new brain!")
 
 # 2. Corrected API Key String
-API_KEY = "AQ.Ab8RN6Im9omIPuqx4W9L804kc76pXRjUcjBKWk-2_7QJEzvdA"
+API_KEY = "AQ.Ab8RN6K_Ai5C6HUadTGcd1mCgABuG8jdURS8tHBBKUrGMnnjTA"
 
 # Configure the core engine
 genai.configure(api_key=API_KEY)
