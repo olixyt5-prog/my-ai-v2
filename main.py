@@ -1,11 +1,11 @@
 import streamlit as st
-import httpx
+import requests
 
-# 1. Page Configuration & Jarvis Theme Styling
-st.set_page_config(page_title="JARVIS Assistant", page_icon="🤖", layout="centered")
+# 1. Page Configuration & Kaze AI Theme Styling
+st.set_page_config(page_title="Kaze AI Assistant", page_icon="✨", layout="centered")
 
-st.markdown("<h1 style='text-align: center; color: #00e5ff;'>🤖 J.A.R.V.I.S.</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; color: #8ab4f8;'>System online. Awaiting your instructions, sir.</p>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; color: #00e5ff;'>✨ KAZE AI</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #8ab4f8;'>System online. How can I assist you today?</p>", unsafe_allow_html=True)
 
 # 2. Permanent Memory/Chat History Storage
 if "messages" not in st.session_state:
@@ -17,30 +17,31 @@ for message in st.session_state.messages:
         st.write(message["content"])
 
 # 3. User Interaction - The Chat Input Box
-if user_prompt := st.chat_input("Enter command for Jarvis..."):
+if user_prompt := st.chat_input("Ask Kaze AI anything..."):
     
     # Immediately show what the user typed in a user bubble
     with st.chat_message("user"):
         st.write(user_prompt)
     st.session_state.messages.append({"role": "user", "content": user_prompt})
 
-    # Show a sleek Jarvis thinking animation while generating response
+    # Show a sleek thinking animation while generating response
     with st.chat_message("assistant"):
-        with st.spinner("Analyzing data streams... 📡"):
+        with st.spinner("Kaze AI is processing... 🧠"):
             try:
-                # Format parameters cleanly to ensure it returns text, not HTML
+                # Setup parameters for a clean text connection
                 params = {
-                    "system": "You are JARVIS, a highly advanced, intelligent, and polite AI assistant like Iron Man's AI. Address the user as 'Sir'."
+                    "system": "You are Kaze AI, a highly advanced, ultra-intelligent, helpful, and friendly AI assistant.",
+                    "json": "false"
                 }
                 
-                # Make the request to the text model endpoint
-                response = httpx.get(f"https://pollinations.ai{user_prompt}", params=params)
-                jarvis_reply = response.text
+                # Using the standard requests method to fetch the answer
+                response = requests.get(f"https://text.pollinations.ai/{user_prompt}", params=params)
+                kaze_reply = response.text
                 
-                st.write(jarvis_reply)
+                st.write(kaze_reply)
                 
-                # Save Jarvis's reply to the chat memory
-                st.session_state.messages.append({"role": "assistant", "content": jarvis_reply})
+                # Save Kaze AI's reply to the chat memory
+                st.session_state.messages.append({"role": "assistant", "content": kaze_reply})
                 
             except Exception as e:
-                st.error("System Override Detected. Unable to connect to core engine.")
+                st.error(f"Engine connection issue: {e}")
