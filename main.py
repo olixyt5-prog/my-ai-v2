@@ -1,18 +1,17 @@
 import streamlit as st
-from google import genai
+import google.generativeai as genai
 
 # 1. Page Configuration & Gemini Styling Layout
 st.set_page_config(page_title="Gemini AI Chatbot", page_icon="✨", layout="centered")
 
-# Visual Header like Google Gemini
 st.title("✨ My Custom Gemini AI")
 st.write("Ask anything, explore ideas, or just chat with my new brain!")
 
-# 2. Insert Your API Key securely
-API_KEY = "AQ.Ab8RN6IpdHz7bgsPINg7-ROVUgHxJirq__o2TRVPTAbF7pCPIQ"
-
-# Initialize the Gemini engine using the completely stable model
-client = genai.Client(api_key=API_KEY)
+# 2. THE ULTIMATE BYPASS KEY
+# PASTE YOUR NEW ALZaSy... KEY INSIDE THESE QUOTES DIRECTLY:
+API_KEY = st.secrets["AQ.Ab8RN6Im9omIPuqx4W9L8O4kc76pXRjUcjBKWk-2_7QJEzvdAw"]
+# Configure the core engine
+genai.configure(api_key=API_KEY)
 
 # 3. Create a Permanent Memory/Chat History Storage
 if "messages" not in st.session_state:
@@ -35,11 +34,9 @@ if user_prompt := st.chat_input("Ask Gemini anything..."):
     with st.chat_message("assistant"):
         with st.spinner("Gemini is thinking..."):
             try:
-                # Calls the fully supported flash model
-                response = client.models.generate_content(
-                    model='gemini-1.5-flash',
-                    contents=user_prompt,
-                )
+                # Call the completely stable chat engine model
+                model = genai.GenerativeModel('gemini-1.5-flash')
+                response = model.generate_content(user_prompt)
                 
                 ai_reply = response.text
                 st.write(ai_reply)
@@ -48,4 +45,4 @@ if user_prompt := st.chat_input("Ask Gemini anything..."):
                 st.session_state.messages.append({"role": "assistant", "content": ai_reply})
                 
             except Exception as e:
-                st.error("Connection Error! Double-check your API Key string inside the code.")
+                st.error(f"Error connecting to AI engine: {e}")
