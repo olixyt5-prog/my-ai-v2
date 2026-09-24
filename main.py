@@ -9,7 +9,7 @@ st.write("Ask anything, explore ideas, or just chat with my new brain!")
 
 # 2. THE ULTIMATE BYPASS KEY
 # PASTE YOUR NEW ALZaSy... KEY INSIDE THESE QUOTES DIRECTLY:
-API_KEY = st.secrets["AQ.Ab8RN6Im9omIPuqx4W9L8O4kc76pXRjUcjBKWk-2_7QJEzvdAw"]
+API_KEY = "AQ.Ab8RN6Im9omIPuqx4W9L804kc76pXRjUcjBKWk-2_7QJEzvdA"
 # Configure the core engine
 genai.configure(api_key=API_KEY)
 
