@@ -28,13 +28,15 @@ if user_prompt := st.chat_input("Enter command for Jarvis..."):
     with st.chat_message("assistant"):
         with st.spinner("Analyzing data streams... 📡"):
             try:
-                # Request a response from the public unblocked system
-                response = httpx.get("https://pollinations.ai", params={
-                    "prompt": user_prompt, 
+                # Format parameters cleanly to ensure it returns text, not HTML
+                params = {
                     "system": "You are JARVIS, a highly advanced, intelligent, and polite AI assistant like Iron Man's AI. Address the user as 'Sir'."
-                })
+                }
                 
+                # Make the request to the text model endpoint
+                response = httpx.get(f"https://pollinations.ai{user_prompt}", params=params)
                 jarvis_reply = response.text
+                
                 st.write(jarvis_reply)
                 
                 # Save Jarvis's reply to the chat memory
