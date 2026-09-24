@@ -98,7 +98,9 @@ if user_prompt := st.chat_input("Inject payload instruction to console..."):
         with st.chat_message("assistant"):
             with st.spinner("🎨 Reconfiguring subsystem matrix for artistic compilation..."):
                 try:
-                    image_url = f"https://pollinations.ai{requests.utils.quote(user_prompt)}?width=1024&height=1024&nologo=true"
+                    # Clean encoding for image strings
+                    encoded_prompt = requests.utils.quote(user_prompt)
+                    image_url = f"https://pollinations.ai{encoded_prompt}?width=1024&height=1024&nologo=true"
                     st.image(image_url, caption=f"Compiled Artifact: '{user_prompt}'")
                     current_history.append({"role": "assistant", "content": image_url, "type": "image", "caption": user_prompt})
                 except Exception as e:
@@ -108,11 +110,14 @@ if user_prompt := st.chat_input("Inject payload instruction to console..."):
         with st.chat_message("assistant"):
             with st.spinner("Compiling tactical solution array... 🌐"):
                 try:
+                    # Explicit separation query variables to stop domain smashing loops
                     params = {
+                        "text": user_prompt,
                         "system": "You are Kaze AI Quantum, a state-of-the-art supercomputer assistant running on a dark blue cybernetic terminal layout.",
                         "json": "false"
                     }
-                    response = requests.get(f"https://pollinations.ai{user_prompt}", params=params)
+                    # Pointed to a clean parameters pathway target
+                    response = requests.get("https://pollinations.ai", params=params)
                     kaze_reply = response.text
                     
                     st.write(kaze_reply)
