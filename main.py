@@ -7,9 +7,9 @@ st.set_page_config(page_title="Gemini AI Chatbot", page_icon="✨", layout="cent
 st.title("✨ My Custom Gemini AI")
 st.write("Ask anything, explore ideas, or just chat with my new brain!")
 
-# 2. THE ULTIMATE BYPASS KEY
-# PASTE YOUR NEW ALZaSy... KEY INSIDE THESE QUOTES DIRECTLY:
+# 2. Corrected API Key String
 API_KEY = "AQ.Ab8RN6Im9omIPuqx4W9L804kc76pXRjUcjBKWk-2_7QJEzvdA"
+
 # Configure the core engine
 genai.configure(api_key=API_KEY)
 
