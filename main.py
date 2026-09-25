@@ -8,21 +8,30 @@ st.set_page_config(
     layout="wide"
 )
 
+# -----------------------------
+# API KEY
+# -----------------------------
+
 api_key = st.secrets["GEMINI_API_KEY"]
-client = genai.Client(api_key=api_key)
 
 MODEL = "gemini-3.8-flash"
+
+
+# -----------------------------
+# CHAT HISTORY
+# -----------------------------
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-if "chat" not in st.session_state:
-    st.session_state.chat = client.chats.create(
-        model=MODEL
-    )
+
+# -----------------------------
+# STYLE
+# -----------------------------
 
 st.markdown("""
 <style>
+
 .stApp {
     background: white;
 }
@@ -71,35 +80,58 @@ st.markdown("""
 .welcome p {
     color: #777777;
     font-size: 17px;
+
 }
+
 </style>
 """, unsafe_allow_html=True)
+
+
+# -----------------------------
+# HEADER
+# -----------------------------
 
 st.markdown("""
 <div class="kaze-header">
     <div class="kaze-logo">K</div>
+
     <div class="kaze-name">
         Kaze <span class="kaze-subtitle">AI</span>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
+
+# -----------------------------
+# SIDEBAR
+# -----------------------------
+
 with st.sidebar:
 
     st.title("Kaze AI")
 
     if st.button("＋ New chat", use_container_width=True):
+
         st.session_state.messages = []
-        st.session_state.chat = client.chats.create(model=MODEL)
+
         st.rerun()
+
 
     if st.button("Clear chat", use_container_width=True):
+
         st.session_state.messages = []
-        st.session_state.chat = client.chats.create(model=MODEL)
+
         st.rerun()
 
+
     st.divider()
+
     st.caption("Powered by Gemini")
+
+
+# -----------------------------
+# WELCOME
+# -----------------------------
 
 if not st.session_state.messages:
 
@@ -110,57 +142,121 @@ if not st.session_state.messages:
     </div>
     """, unsafe_allow_html=True)
 
+
+# -----------------------------
+# SHOW CHAT
+# -----------------------------
+
 for message in st.session_state.messages:
 
     with st.chat_message(message["role"]):
+
         st.markdown(message["content"])
+
+
+# -----------------------------
+# INPUT
+# -----------------------------
 
 prompt = st.chat_input("Message Kaze...")
 
+
 if prompt:
 
+    # Save user message
     st.session_state.messages.append({
         "role": "user",
         "content": prompt
     })
 
+
+    # Show user message
     with st.chat_message("user"):
+
         st.markdown(prompt)
 
+
+    # Kaze
     with st.chat_message("assistant"):
 
         thinking = st.empty()
+
         thinking.markdown("🧠 Kaze is thinking...")
 
         start_time = time.time()
 
+
         try:
 
-            response = st.session_state.chat.send_message(
-                message=prompt
+            # Create a NEW client for this request
+            client = genai.Client(
+                api_key=api_key
             )
+
+
+            # Build conversation context
+            conversation = ""
+
+            for message in st.session_state.messages:
+
+                if message["role"] == "user":
+
+                    conversation += (
+                        "User: "
+                        + message["content"]
+                        + "\n"
+                    )
+
+                else:
+
+                    conversation += (
+                        "Kaze: "
+                        + message["content"]
+                        + "\n"
+                    )
+
+
+            conversation += "Kaze:"
+
+
+            # Send request
+            response = client.models.generate_content(
+                model=MODEL,
+                contents=conversation
+            )
+
 
             answer = response.text
 
+
+            # Keep thinking visible briefly
             elapsed = time.time() - start_time
 
             if elapsed < 0.7:
+
                 time.sleep(0.7 - elapsed)
 
+
             thinking.empty()
+
             st.markdown(answer)
+
 
         except Exception as e:
 
             thinking.empty()
 
             st.error("Kaze couldn't answer.")
+
             st.write("### Actual error:")
+
             st.code(str(e))
 
             answer = "I couldn't answer that message."
 
-    st.session_state.messages.append({
-        "role": "assistant",
-        "content": answer
-    })
+
+        # Save Kaze response
+        st.session_state.messages.append({
+            "role": "assistant",
+            "content": answer
+        })
