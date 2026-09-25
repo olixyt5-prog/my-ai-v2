@@ -3,14 +3,14 @@ import time
 from google import genai
 
 # =========================================================
-# PAGE CONFIG
+# PAGE
 # =========================================================
 
 st.set_page_config(
     page_title="Kaze AI",
     page_icon="K",
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="expanded"
 )
 
 # =========================================================
@@ -24,300 +24,228 @@ client = genai.Client(api_key=api_key)
 MODEL = "gemini-3.8-flash"
 
 # =========================================================
-# SESSION STATE
+# SESSION
 # =========================================================
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
 # =========================================================
-# CUSTOM CSS
+# SIMPLE CLEAN CSS
 # =========================================================
 
 st.markdown("""
 <style>
 
-/* =========================
-   GLOBAL
-========================= */
+/* -----------------------------
+   PAGE
+----------------------------- */
 
 .stApp {
-    background: #080809;
-    color: #f5f5f5;
+    background: #ffffff;
+    color: #202123;
 }
 
+/* -----------------------------
+   MAIN CONTENT
+----------------------------- */
+
 .block-container {
-    max-width: 950px;
+    max-width: 900px;
     padding-top: 1rem;
     padding-bottom: 120px;
 }
 
-#MainMenu {
-    visibility: hidden;
-}
-
-footer {
-    visibility: hidden;
-}
-
-header {
-    background: transparent !important;
-}
-
-/* =========================
+/* -----------------------------
    HEADER
-========================= */
+----------------------------- */
 
 .kaze-header {
-    height: 55px;
-
     display: flex;
     align-items: center;
+    gap: 10px;
 
-    border-bottom: 1px solid rgba(255,255,255,0.06);
+    padding: 10px 0 18px;
+
+    border-bottom: 1px solid #eeeeee;
 
     margin-bottom: 20px;
 }
 
-.kaze-brand {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
 .kaze-logo {
-    width: 30px;
-    height: 30px;
+    width: 32px;
+    height: 32px;
+
+    border-radius: 8px;
 
     display: flex;
     align-items: center;
     justify-content: center;
 
-    border-radius: 9px;
+    background: #111111;
+    color: white;
 
-    background: #f1f1f1;
-    color: #080809;
-
-    font-size: 14px;
     font-weight: 700;
+    font-size: 15px;
 }
 
-.kaze-title {
-    font-size: 17px;
+.kaze-name {
+    font-size: 18px;
     font-weight: 600;
-    color: #eeeeee;
+    color: #202123;
 }
 
-.kaze-ai {
-    color: #666666;
-    font-size: 11px;
-    margin-left: 4px;
+.kaze-subtitle {
+    font-size: 12px;
+    color: #8e8e8e;
+    margin-left: 3px;
 }
 
-/* =========================
+/* -----------------------------
    WELCOME
-========================= */
+----------------------------- */
 
 .welcome {
     text-align: center;
-
-    padding-top: 100px;
-    padding-bottom: 70px;
+    padding: 150px 20px 80px;
 }
 
-.welcome-small {
-    color: #777777;
-    font-size: 13px;
-
-    margin-bottom: 15px;
-}
-
-.welcome-title {
-    font-size: 48px;
+.welcome h1 {
+    font-size: 32px;
     font-weight: 600;
-
-    letter-spacing: -2.5px;
-
-    color: #f5f5f5;
-
-    margin-bottom: 12px;
-}
-
-.welcome-subtitle {
-    color: #707070;
-    font-size: 14px;
-}
-
-/* =========================
-   CARDS
-========================= */
-
-.cards {
-    display: grid;
-
-    grid-template-columns: repeat(4, 1fr);
-
-    gap: 10px;
-
-    max-width: 800px;
-
-    margin: 40px auto 0 auto;
-}
-
-.card {
-    text-align: left;
-
-    padding: 16px;
-
-    border-radius: 15px;
-
-    border: 1px solid rgba(255,255,255,0.07);
-
-    background: rgba(255,255,255,0.025);
-
-    transition: 0.2s ease;
-}
-
-.card:hover {
-    background: rgba(255,255,255,0.05);
-
-    border-color:
-        rgba(255,255,255,0.12);
-
-    transform: translateY(-2px);
-}
-
-.card-icon {
-    font-size: 16px;
-
+    color: #202123;
     margin-bottom: 10px;
 }
 
-.card-title {
-    font-size: 13px;
-
-    font-weight: 500;
-
-    color: #dddddd;
+.welcome p {
+    color: #777777;
+    font-size: 15px;
 }
 
-.card-description {
-    color: #666666;
-
-    font-size: 11px;
-
-    margin-top: 5px;
-}
-
-/* =========================
+/* -----------------------------
    CHAT
-========================= */
+----------------------------- */
 
 [data-testid="stChatMessage"] {
+    padding: 15px 5px !important;
     background: transparent !important;
-
     border: none !important;
-
-    padding-top: 12px;
-    padding-bottom: 12px;
 }
 
-/* Assistant messages */
+/* User message */
+
+[data-testid="stChatMessage"]:has(
+    [data-testid="chatAvatarIcon-user"]
+) {
+    background: #f7f7f8 !important;
+
+    border-radius: 12px !important;
+
+    margin: 5px 0;
+}
+
+/* Assistant message */
 
 [data-testid="stChatMessage"]:has(
     [data-testid="chatAvatarIcon-assistant"]
 ) {
-    background: rgba(255,255,255,0.025) !important;
+    background: white !important;
 
-    border-radius: 18px !important;
-
-    padding: 16px !important;
-
-    margin-bottom: 8px;
+    margin: 5px 0;
 }
 
-/* Chat text */
+/* Text */
 
 [data-testid="stChatMessage"] p {
-    font-size: 14px;
-
-    line-height: 1.7;
+    font-size: 15px;
+    line-height: 1.65;
 }
 
-/* =========================
+/* -----------------------------
    INPUT
-========================= */
+----------------------------- */
 
 [data-testid="stChatInput"] {
-    border-top: none !important;
+    padding-bottom: 20px;
 }
 
 [data-testid="stChatInput"] > div {
-    background: #151517 !important;
+    border: 1px solid #d9d9d9 !important;
 
-    border:
-        1px solid
-        rgba(255,255,255,0.09) !important;
+    border-radius: 14px !important;
 
-    border-radius: 18px !important;
+    background: white !important;
 
     box-shadow:
-        0 15px 50px
-        rgba(0,0,0,0.35) !important;
+        0 2px 8px rgba(0,0,0,0.05) !important;
 }
 
 [data-testid="stChatInput"] textarea {
-    color: #eeeeee !important;
+    color: #202123 !important;
 }
 
 [data-testid="stChatInput"] textarea::placeholder {
-    color: #666666 !important;
+    color: #999999 !important;
 }
 
-/* =========================
+/* -----------------------------
    SIDEBAR
-========================= */
+----------------------------- */
 
 section[data-testid="stSidebar"] {
-    background: #0b0b0d;
+    background: #f7f7f8;
 
-    border-right:
-        1px solid
-        rgba(255,255,255,0.06);
+    border-right: 1px solid #e5e5e5;
 }
 
-.sidebar-heading {
+.sidebar-title {
     font-size: 18px;
-
     font-weight: 600;
 
     margin-bottom: 20px;
 }
 
-.sidebar-description {
-    color: #666666;
-
+.sidebar-info {
+    color: #777777;
     font-size: 12px;
-
     line-height: 1.6;
+
+    margin-top: 25px;
 }
 
-/* =========================
+/* Buttons */
+
+.stButton > button {
+    border-radius: 8px;
+
+    border: 1px solid #dddddd;
+
+    background: white;
+
+    color: #333333;
+}
+
+.stButton > button:hover {
+    background: #eeeeee;
+}
+
+/* -----------------------------
    MOBILE
-========================= */
+----------------------------- */
 
 @media (max-width: 700px) {
 
+    .block-container {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
     .welcome {
-        padding-top: 70px;
+        padding-top: 120px;
     }
 
-    .welcome-title {
-        font-size: 38px;
-    }
-
-    .cards {
-        grid-template-columns: repeat(2, 1fr);
+    .welcome h1 {
+        font-size: 28px;
     }
 
 }
@@ -332,17 +260,13 @@ section[data-testid="stSidebar"] {
 st.markdown("""
 <div class="kaze-header">
 
-    <div class="kaze-brand">
+    <div class="kaze-logo">
+        K
+    </div>
 
-        <div class="kaze-logo">
-            K
-        </div>
-
-        <div class="kaze-title">
-            Kaze
-            <span class="kaze-ai">AI</span>
-        </div>
-
+    <div class="kaze-name">
+        Kaze
+        <span class="kaze-subtitle">AI</span>
     </div>
 
 </div>
@@ -355,45 +279,37 @@ st.markdown("""
 with st.sidebar:
 
     st.markdown(
-        '<div class="sidebar-heading">Kaze</div>',
+        '<div class="sidebar-title">Kaze</div>',
         unsafe_allow_html=True
     )
 
     if st.button(
-        "＋  New Chat",
+        "＋ New chat",
         use_container_width=True
     ):
         st.session_state.messages = []
         st.rerun()
 
     if st.button(
-        "Clear Conversation",
+        "Clear chat",
         use_container_width=True
     ):
         st.session_state.messages = []
         st.rerun()
 
-    st.markdown("---")
-
     st.markdown(
         """
-        <div class="sidebar-description">
-
-        Your AI assistant for
-        questions, coding, ideas,
-        learning and more.
-
-        <br><br>
-
-        Powered by Gemini.
-
+        <div class="sidebar-info">
+        Kaze is your AI assistant for
+        questions, coding, learning,
+        brainstorming and more.
         </div>
         """,
         unsafe_allow_html=True
     )
 
 # =========================================================
-# WELCOME SCREEN
+# WELCOME
 # =========================================================
 
 if not st.session_state.messages:
@@ -401,85 +317,11 @@ if not st.session_state.messages:
     st.markdown("""
     <div class="welcome">
 
-        <div class="welcome-small">
-            Welcome to Kaze
-        </div>
+        <h1>How can I help you?</h1>
 
-        <div class="welcome-title">
-            What can I help with?
-        </div>
-
-        <div class="welcome-subtitle">
-            Ask anything. Build something. Learn something.
-        </div>
-
-        <div class="cards">
-
-            <div class="card">
-
-                <div class="card-icon">
-                    ✦
-                </div>
-
-                <div class="card-title">
-                    Ideas
-                </div>
-
-                <div class="card-description">
-                    Brainstorm something new
-                </div>
-
-            </div>
-
-            <div class="card">
-
-                <div class="card-icon">
-                    &lt;/&gt;
-                </div>
-
-                <div class="card-title">
-                    Code
-                </div>
-
-                <div class="card-description">
-                    Build and debug projects
-                </div>
-
-            </div>
-
-            <div class="card">
-
-                <div class="card-icon">
-                    ◌
-                </div>
-
-                <div class="card-title">
-                    Learn
-                </div>
-
-                <div class="card-description">
-                    Understand difficult topics
-                </div>
-
-            </div>
-
-            <div class="card">
-
-                <div class="card-icon">
-                    ↗
-                </div>
-
-                <div class="card-title">
-                    Create
-                </div>
-
-                <div class="card-description">
-                    Turn ideas into reality
-                </div>
-
-            </div>
-
-        </div>
+        <p>
+            Ask Kaze anything.
+        </p>
 
     </div>
     """, unsafe_allow_html=True)
@@ -495,16 +337,16 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 # =========================================================
-# CHAT INPUT
+# INPUT
 # =========================================================
 
 prompt = st.chat_input(
-    "Ask Kaze anything..."
+    "Message Kaze..."
 )
 
 if prompt:
 
-    # Add user message
+    # Save user message
     st.session_state.messages.append({
         "role": "user",
         "content": prompt
@@ -516,7 +358,7 @@ if prompt:
         st.markdown(prompt)
 
     # =====================================================
-    # BUILD CONVERSATION
+    # CONVERSATION
     # =====================================================
 
     conversation = []
@@ -525,23 +367,20 @@ if prompt:
 
         role = message["role"].upper()
 
-        content = message["content"]
-
         conversation.append(
-            f"{role}: {content}"
+            f"{role}: {message['content']}"
         )
 
     full_prompt = "\n\n".join(conversation)
 
     # =====================================================
-    # GEMINI RESPONSE
+    # GEMINI
     # =====================================================
 
     with st.chat_message("assistant"):
 
         answer = None
 
-        # Try up to 3 times
         for attempt in range(3):
 
             try:
@@ -568,7 +407,7 @@ if prompt:
                     if "503" in error_text:
 
                         answer = (
-                            "Kaze is a little busy right now. "
+                            "Kaze is temporarily busy. "
                             "Please try again in a moment."
                         )
 
@@ -582,13 +421,13 @@ if prompt:
                     else:
 
                         answer = (
-                            "Kaze couldn't complete that request "
-                            "right now. Please try again."
+                            "Something went wrong. "
+                            "Please try again."
                         )
 
         st.markdown(answer)
 
-    # Save assistant response
+    # Save response
     st.session_state.messages.append({
         "role": "assistant",
         "content": answer
