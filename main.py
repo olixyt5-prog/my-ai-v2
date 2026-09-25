@@ -1,11 +1,11 @@
+```python
 import streamlit as st
 import time
 from google import genai
 
-# =========================================================
-# PAGE
-# =========================================================
-
+# -----------------------------
+# PAGE SETTINGS
+# -----------------------------
 st.set_page_config(
     page_title="Kaze AI",
     page_icon="🧠",
@@ -13,245 +13,146 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# =========================================================
-# GEMINI
-# =========================================================
+# -----------------------------
+# GEMINI SETUP
+# -----------------------------
+try:
+    api_key = st.secrets["GEMINI_API_KEY"]
+    client = genai.Client(api_key=api_key)
 
-api_key = st.secrets["GEMINI_API_KEY"]
+    MODEL = "gemini-3.8-flash"
 
-client = genai.Client(api_key=api_key)
+except Exception as e:
+    st.error("Kaze setup error:")
+    st.code(str(e))
+    st.stop()
 
-MODEL = "gemini-3.8-flash"
-
-# =========================================================
-# SESSION
-# =========================================================
-
+# -----------------------------
+# SESSION STATE
+# -----------------------------
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
 if "chat" not in st.session_state:
-    st.session_state.chat = client.chats.create(
-        model=MODEL
-    )
+    try:
+        st.session_state.chat = client.chats.create(
+            model=MODEL
+        )
+    except Exception as e:
+        st.error("Could not start Kaze:")
+        st.code(str(e))
+        st.stop()
 
-# =========================================================
+# -----------------------------
 # CSS
-# =========================================================
-
+# -----------------------------
 st.markdown("""
 <style>
 
 .stApp {
-    background: #ffffff;
-    color: #202123;
+    background: white;
 }
-
-.block-container {
-    max-width: 900px;
-    padding-top: 1rem;
-    padding-bottom: 120px;
-}
-
-#MainMenu {
-    visibility: hidden;
-}
-
-footer {
-    visibility: hidden;
-}
-
-header {
-    background: transparent !important;
-}
-
-/* HEADER */
 
 .kaze-header {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 10px 0 18px;
+    padding: 10px 0 20px 0;
     border-bottom: 1px solid #eeeeee;
-    margin-bottom: 20px;
 }
 
 .kaze-logo {
-    width: 32px;
-    height: 32px;
-    border-radius: 9px;
-
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: #111111;
+    color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-
-    background: #111111;
-    color: white;
-
     font-weight: 700;
+    font-size: 20px;
 }
 
 .kaze-name {
-    font-size: 18px;
-    font-weight: 600;
+    font-size: 22px;
+    font-weight: 700;
 }
 
 .kaze-subtitle {
-    color: #999999;
-    font-size: 12px;
+    color: #888888;
+    font-weight: 400;
 }
-
-/* WELCOME */
 
 .welcome {
     text-align: center;
-    padding: 150px 20px 80px;
+    padding-top: 130px;
+    padding-bottom: 50px;
 }
 
 .welcome h1 {
-    font-size: 32px;
-    font-weight: 600;
-    color: #202123;
-    margin-bottom: 10px;
+    font-size: 38px;
+    margin-bottom: 8px;
 }
 
 .welcome p {
     color: #777777;
-}
-
-/* CHAT */
-
-[data-testid="stChatMessage"] {
-    padding: 15px 5px !important;
-    background: transparent !important;
-    border: none !important;
-}
-
-[data-testid="stChatMessage"]:has(
-    [data-testid="chatAvatarIcon-user"]
-) {
-    background: #f7f7f8 !important;
-    border-radius: 12px !important;
-    margin: 5px 0;
-}
-
-[data-testid="stChatMessage"] p {
-    font-size: 15px;
-    line-height: 1.65;
-}
-
-/* INPUT */
-
-[data-testid="stChatInput"] > div {
-    border: 1px solid #d9d9d9 !important;
-    border-radius: 14px !important;
-    background: white !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important;
-}
-
-[data-testid="stChatInput"] textarea {
-    color: #202123 !important;
-}
-
-[data-testid="stChatInput"] textarea::placeholder {
-    color: #999999 !important;
-}
-
-/* SIDEBAR */
-
-section[data-testid="stSidebar"] {
-    background: #f7f7f8;
-    border-right: 1px solid #e5e5e5;
-}
-
-.sidebar-title {
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 20px;
-}
-
-.sidebar-info {
-    color: #777777;
-    font-size: 12px;
-    line-height: 1.6;
-    margin-top: 25px;
-}
-
-.stButton > button {
-    border-radius: 8px;
-    border: 1px solid #dddddd;
-    background: white;
-    color: #333333;
-}
-
-.stButton > button:hover {
-    background: #eeeeee;
+    font-size: 17px;
 }
 
 </style>
 """, unsafe_allow_html=True)
 
-# =========================================================
+# -----------------------------
 # HEADER
-# =========================================================
-
+# -----------------------------
 st.markdown("""
 <div class="kaze-header">
     <div class="kaze-logo">K</div>
-
     <div class="kaze-name">
-        Kaze
-        <span class="kaze-subtitle"> AI</span>
+        Kaze <span class="kaze-subtitle">AI</span>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
-# =========================================================
+# -----------------------------
 # SIDEBAR
-# =========================================================
-
+# -----------------------------
 with st.sidebar:
 
-    st.markdown(
-        '<div class="sidebar-title">Kaze</div>',
-        unsafe_allow_html=True
-    )
+    st.title("Kaze AI")
 
     if st.button("＋ New chat", use_container_width=True):
-
         st.session_state.messages = []
 
-        st.session_state.chat = client.chats.create(
-            model=MODEL
-        )
+        try:
+            st.session_state.chat = client.chats.create(
+                model=MODEL
+            )
+        except Exception as e:
+            st.error(str(e))
 
         st.rerun()
 
     if st.button("Clear chat", use_container_width=True):
-
         st.session_state.messages = []
 
-        st.session_state.chat = client.chats.create(
-            model=MODEL
-        )
+        try:
+            st.session_state.chat = client.chats.create(
+                model=MODEL
+            )
+        except Exception as e:
+            st.error(str(e))
 
         st.rerun()
 
-    st.markdown(
-        """
-        <div class="sidebar-info">
-        Kaze is your AI assistant for
-        questions, coding, learning,
-        brainstorming and more.
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    st.divider()
 
-# =========================================================
+    st.caption("Powered by Gemini")
+
+# -----------------------------
 # WELCOME
-# =========================================================
-
+# -----------------------------
 if not st.session_state.messages:
 
     st.markdown("""
@@ -261,28 +162,22 @@ if not st.session_state.messages:
     </div>
     """, unsafe_allow_html=True)
 
-# =========================================================
-# CHAT HISTORY
-# =========================================================
-
+# -----------------------------
+# DISPLAY CHAT
+# -----------------------------
 for message in st.session_state.messages:
 
     with st.chat_message(message["role"]):
-
         st.markdown(message["content"])
 
-# =========================================================
-# INPUT
-# =========================================================
-
+# -----------------------------
+# CHAT INPUT
+# -----------------------------
 prompt = st.chat_input("Message Kaze...")
 
 if prompt:
 
-    # -----------------------------------------------------
-    # USER
-    # -----------------------------------------------------
-
+    # Show user message
     st.session_state.messages.append({
         "role": "user",
         "content": prompt
@@ -291,60 +186,66 @@ if prompt:
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # -----------------------------------------------------
-    # KAZE
-    # -----------------------------------------------------
-
+    # Kaze response
     with st.chat_message("assistant"):
 
         thinking = st.empty()
 
         thinking.markdown("🧠 Kaze is thinking...")
 
-        answer = None
+        start_time = time.time()
 
         try:
 
             response = st.session_state.chat.send_message(
-                prompt
+                message=prompt
             )
 
             answer = response.text
 
+            # Make thinking message visible briefly
+            elapsed = time.time() - start_time
+
+            if elapsed < 0.7:
+                time.sleep(0.7 - elapsed)
+
+            thinking.empty()
+
+            st.markdown(answer)
+
         except Exception as e:
 
-            error_text = str(e)
+            thinking.empty()
 
-            if "429" in error_text:
+            # SHOW REAL ERROR
+            st.error("Kaze couldn't answer.")
 
-                answer = (
-                    "🧠 Kaze is a little busy right now. "
-                    "Give me a moment and try again."
-                )
+            st.write("### 🔍 Actual error:")
+            st.code(str(e))
 
-            elif "503" in error_text:
+            answer = "I couldn't answer that message."
 
-                answer = (
-                    "🧠 Gemini is temporarily busy. "
-                    "Please try again in a moment."
-                )
-
-            else:
-
-                answer = (
-                    "Something went wrong. "
-                    "Please try again."
-                )
-
-        thinking.empty()
-
-        st.markdown(answer)
-
-    # -----------------------------------------------------
-    # SAVE
-    # -----------------------------------------------------
-
+    # Save assistant response
     st.session_state.messages.append({
         "role": "assistant",
         "content": answer
     })
+```
+
+### Then do this
+
+1. Save `main.py`
+2. Push/commit it to your GitHub repo.
+3. Let Streamlit redeploy.
+4. Send Kaze **one message**.
+5. Send a **second message**.
+6. If it fails, you'll now see something like:
+
+   * `429 RESOURCE_EXHAUSTED`
+   * `403 PERMISSION_DENIED`
+   * `400 INVALID_ARGUMENT`
+   * or another specific error.
+
+**Don't send me your API key.** Just send me the **actual error text shown under “🔍 Actual error:”**.
+
+That will tell us exactly what's breaking instead of guessing. Google specifically recommends checking the actual API error code; for example, `429` means a rate/resource limit situation and should be handled differently from `400`/`403` errors.
