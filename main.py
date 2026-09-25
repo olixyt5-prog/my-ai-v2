@@ -30,6 +30,11 @@ MODEL = "gemini-3.8-flash"
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+if "chat" not in st.session_state:
+    st.session_state.chat = client.chats.create(
+        model=MODEL
+    )
+
 # =========================================================
 # CSS
 # =========================================================
@@ -66,18 +71,14 @@ header {
     display: flex;
     align-items: center;
     gap: 10px;
-
     padding: 10px 0 18px;
-
     border-bottom: 1px solid #eeeeee;
-
     margin-bottom: 20px;
 }
 
 .kaze-logo {
     width: 32px;
     height: 32px;
-
     border-radius: 9px;
 
     display: flex;
@@ -187,25 +188,6 @@ section[data-testid="stSidebar"] {
     background: #eeeeee;
 }
 
-/* MOBILE */
-
-@media (max-width: 700px) {
-
-    .block-container {
-        padding-left: 15px;
-        padding-right: 15px;
-    }
-
-    .welcome {
-        padding-top: 120px;
-    }
-
-    .welcome h1 {
-        font-size: 28px;
-    }
-
-}
-
 </style>
 """, unsafe_allow_html=True)
 
@@ -236,11 +218,23 @@ with st.sidebar:
     )
 
     if st.button("＋ New chat", use_container_width=True):
+
         st.session_state.messages = []
+
+        st.session_state.chat = client.chats.create(
+            model=MODEL
+        )
+
         st.rerun()
 
     if st.button("Clear chat", use_container_width=True):
+
         st.session_state.messages = []
+
+        st.session_state.chat = client.chats.create(
+            model=MODEL
+        )
+
         st.rerun()
 
     st.markdown(
@@ -274,6 +268,7 @@ if not st.session_state.messages:
 for message in st.session_state.messages:
 
     with st.chat_message(message["role"]):
+
         st.markdown(message["content"])
 
 # =========================================================
@@ -284,7 +279,10 @@ prompt = st.chat_input("Message Kaze...")
 
 if prompt:
 
-    # User message
+    # -----------------------------------------------------
+    # USER
+    # -----------------------------------------------------
+
     st.session_state.messages.append({
         "role": "user",
         "content": prompt
@@ -293,73 +291,59 @@ if prompt:
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # Conversation
-    conversation = []
+    # -----------------------------------------------------
+    # KAZE
+    # -----------------------------------------------------
 
-    for message in st.session_state.messages:
-
-        conversation.append(
-            f"{message['role'].upper()}: {message['content']}"
-        )
-
-    full_prompt = "\n\n".join(conversation)
-
-    # Kaze response
     with st.chat_message("assistant"):
 
         thinking = st.empty()
 
-        # JUST THIS
         thinking.markdown("🧠 Kaze is thinking...")
 
         answer = None
 
-        for attempt in range(3):
+        try:
 
-            try:
+            response = st.session_state.chat.send_message(
+                prompt
+            )
 
-                response = client.models.generate_content(
-                    model=MODEL,
-                    contents=full_prompt
+            answer = response.text
+
+        except Exception as e:
+
+            error_text = str(e)
+
+            if "429" in error_text:
+
+                answer = (
+                    "🧠 Kaze is a little busy right now. "
+                    "Give me a moment and try again."
                 )
 
-                answer = response.text
-                break
+            elif "503" in error_text:
 
-            except Exception as e:
+                answer = (
+                    "🧠 Gemini is temporarily busy. "
+                    "Please try again in a moment."
+                )
 
-                if attempt < 2:
-                    time.sleep(2)
+            else:
 
-                else:
+                answer = (
+                    "Something went wrong. "
+                    "Please try again."
+                )
 
-                    error_text = str(e)
-
-                    if "503" in error_text:
-                        answer = (
-                            "Kaze is temporarily busy. "
-                            "Please try again in a moment."
-                        )
-
-                    elif "429" in error_text:
-                        answer = (
-                            "Kaze is temporarily rate-limited. "
-                            "Please try again shortly."
-                        )
-
-                    else:
-                        answer = (
-                            "Something went wrong. "
-                            "Please try again."
-                        )
-
-        # Remove "thinking"
         thinking.empty()
 
-        # Show answer
         st.markdown(answer)
 
-    # Save answer
+    # -----------------------------------------------------
+    # SAVE
+    # -----------------------------------------------------
+
     st.session_state.messages.append({
         "role": "assistant",
         "content": answer
