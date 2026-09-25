@@ -37,8 +37,6 @@ if "messages" not in st.session_state:
 st.markdown("""
 <style>
 
-/* PAGE */
-
 .stApp {
     background: #ffffff;
     color: #202123;
@@ -48,6 +46,18 @@ st.markdown("""
     max-width: 900px;
     padding-top: 1rem;
     padding-bottom: 120px;
+}
+
+#MainMenu {
+    visibility: hidden;
+}
+
+footer {
+    visibility: hidden;
+}
+
+header {
+    background: transparent !important;
 }
 
 /* HEADER */
@@ -135,9 +145,7 @@ st.markdown("""
     border: 1px solid #d9d9d9 !important;
     border-radius: 14px !important;
     background: white !important;
-
-    box-shadow:
-        0 2px 8px rgba(0,0,0,0.05) !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important;
 }
 
 [data-testid="stChatInput"] textarea {
@@ -146,45 +154,6 @@ st.markdown("""
 
 [data-testid="stChatInput"] textarea::placeholder {
     color: #999999 !important;
-}
-
-/* THINKING */
-
-.thinking {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-
-    color: #777777;
-
-    font-size: 14px;
-
-    padding: 8px 0;
-}
-
-.brain {
-    font-size: 19px;
-
-    animation: brainPulse 1.2s infinite;
-}
-
-@keyframes brainPulse {
-
-    0% {
-        transform: scale(1);
-        opacity: 0.55;
-    }
-
-    50% {
-        transform: scale(1.18);
-        opacity: 1;
-    }
-
-    100% {
-        transform: scale(1);
-        opacity: 0.55;
-    }
-
 }
 
 /* SIDEBAR */
@@ -246,16 +215,12 @@ section[data-testid="stSidebar"] {
 
 st.markdown("""
 <div class="kaze-header">
-
-    <div class="kaze-logo">
-        K
-    </div>
+    <div class="kaze-logo">K</div>
 
     <div class="kaze-name">
         Kaze
         <span class="kaze-subtitle"> AI</span>
     </div>
-
 </div>
 """, unsafe_allow_html=True)
 
@@ -270,22 +235,12 @@ with st.sidebar:
         unsafe_allow_html=True
     )
 
-    if st.button(
-        "＋ New chat",
-        use_container_width=True
-    ):
-
+    if st.button("＋ New chat", use_container_width=True):
         st.session_state.messages = []
-
         st.rerun()
 
-    if st.button(
-        "Clear chat",
-        use_container_width=True
-    ):
-
+    if st.button("Clear chat", use_container_width=True):
         st.session_state.messages = []
-
         st.rerun()
 
     st.markdown(
@@ -307,13 +262,8 @@ if not st.session_state.messages:
 
     st.markdown("""
     <div class="welcome">
-
         <h1>How can I help you?</h1>
-
-        <p>
-            Ask Kaze anything.
-        </p>
-
+        <p>Ask Kaze anything.</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -324,78 +274,43 @@ if not st.session_state.messages:
 for message in st.session_state.messages:
 
     with st.chat_message(message["role"]):
-
         st.markdown(message["content"])
 
 # =========================================================
-# CHAT INPUT
+# INPUT
 # =========================================================
 
-prompt = st.chat_input(
-    "Message Kaze..."
-)
+prompt = st.chat_input("Message Kaze...")
 
 if prompt:
 
-    # -----------------------------------------------------
-    # USER MESSAGE
-    # -----------------------------------------------------
-
+    # User message
     st.session_state.messages.append({
         "role": "user",
         "content": prompt
     })
 
     with st.chat_message("user"):
-
         st.markdown(prompt)
 
-    # -----------------------------------------------------
-    # CONVERSATION
-    # -----------------------------------------------------
-
+    # Conversation
     conversation = []
 
     for message in st.session_state.messages:
 
-        role = message["role"].upper()
-
-        content = message["content"]
-
         conversation.append(
-            f"{role}: {content}"
+            f"{message['role'].upper()}: {message['content']}"
         )
 
     full_prompt = "\n\n".join(conversation)
 
-    # -----------------------------------------------------
-    # KAZE THINKING
-    # -----------------------------------------------------
-
+    # Kaze response
     with st.chat_message("assistant"):
 
         thinking = st.empty()
 
-        thinking.markdown(
-            """
-            <div class="thinking">
-
-                <span class="brain">
-                    🧠
-                </span>
-
-                <span>
-                    Kaze is thinking...
-                </span>
-
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-        # -------------------------------------------------
-        # GEMINI
-        # -------------------------------------------------
+        # JUST THIS
+        thinking.markdown("🧠 Kaze is thinking...")
 
         answer = None
 
@@ -409,13 +324,11 @@ if prompt:
                 )
 
                 answer = response.text
-
                 break
 
             except Exception as e:
 
                 if attempt < 2:
-
                     time.sleep(2)
 
                 else:
@@ -423,38 +336,30 @@ if prompt:
                     error_text = str(e)
 
                     if "503" in error_text:
-
                         answer = (
                             "Kaze is temporarily busy. "
                             "Please try again in a moment."
                         )
 
                     elif "429" in error_text:
-
                         answer = (
                             "Kaze is temporarily rate-limited. "
                             "Please try again shortly."
                         )
 
                     else:
-
                         answer = (
                             "Something went wrong. "
                             "Please try again."
                         )
 
-        # -------------------------------------------------
-        # REPLACE THINKING WITH ANSWER
-        # -------------------------------------------------
-
+        # Remove "thinking"
         thinking.empty()
 
+        # Show answer
         st.markdown(answer)
 
-    # -----------------------------------------------------
-    # SAVE RESPONSE
-    # -----------------------------------------------------
-
+    # Save answer
     st.session_state.messages.append({
         "role": "assistant",
         "content": answer
