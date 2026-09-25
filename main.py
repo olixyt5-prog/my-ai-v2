@@ -1,4 +1,3 @@
-```python
 import streamlit as st
 import time
 from google import genai
@@ -10,25 +9,20 @@ st.set_page_config(
 )
 
 api_key = st.secrets["GEMINI_API_KEY"]
-
 client = genai.Client(api_key=api_key)
 
 MODEL = "gemini-3.8-flash"
 
-
 if "messages" not in st.session_state:
     st.session_state.messages = []
-
 
 if "chat" not in st.session_state:
     st.session_state.chat = client.chats.create(
         model=MODEL
     )
 
-
 st.markdown("""
 <style>
-
 .stApp {
     background: white;
 }
@@ -78,10 +72,8 @@ st.markdown("""
     color: #777777;
     font-size: 17px;
 }
-
 </style>
 """, unsafe_allow_html=True)
-
 
 st.markdown("""
 <div class="kaze-header">
@@ -92,37 +84,22 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-
 with st.sidebar:
 
     st.title("Kaze AI")
 
     if st.button("＋ New chat", use_container_width=True):
-
         st.session_state.messages = []
-
-        st.session_state.chat = client.chats.create(
-            model=MODEL
-        )
-
+        st.session_state.chat = client.chats.create(model=MODEL)
         st.rerun()
-
 
     if st.button("Clear chat", use_container_width=True):
-
         st.session_state.messages = []
-
-        st.session_state.chat = client.chats.create(
-            model=MODEL
-        )
-
+        st.session_state.chat = client.chats.create(model=MODEL)
         st.rerun()
 
-
     st.divider()
-
     st.caption("Powered by Gemini")
-
 
 if not st.session_state.messages:
 
@@ -133,16 +110,12 @@ if not st.session_state.messages:
     </div>
     """, unsafe_allow_html=True)
 
-
 for message in st.session_state.messages:
 
     with st.chat_message(message["role"]):
-
         st.markdown(message["content"])
 
-
 prompt = st.chat_input("Message Kaze...")
-
 
 if prompt:
 
@@ -151,20 +124,15 @@ if prompt:
         "content": prompt
     })
 
-
     with st.chat_message("user"):
-
         st.markdown(prompt)
-
 
     with st.chat_message("assistant"):
 
         thinking = st.empty()
-
         thinking.markdown("🧠 Kaze is thinking...")
 
         start_time = time.time()
-
 
         try:
 
@@ -177,27 +145,20 @@ if prompt:
             elapsed = time.time() - start_time
 
             if elapsed < 0.7:
-
                 time.sleep(0.7 - elapsed)
 
-
             thinking.empty()
-
             st.markdown(answer)
-
 
         except Exception as e:
 
             thinking.empty()
 
             st.error("Kaze couldn't answer.")
-
-            st.write("### 🔍 Actual error:")
-
+            st.write("### Actual error:")
             st.code(str(e))
 
             answer = "I couldn't answer that message."
-
 
     st.session_state.messages.append({
         "role": "assistant",
