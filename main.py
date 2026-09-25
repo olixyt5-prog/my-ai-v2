@@ -1,8 +1,9 @@
 import streamlit as st
+import time
 from google import genai
 
 # =========================================================
-# PAGE SETUP
+# PAGE CONFIG
 # =========================================================
 
 st.set_page_config(
@@ -13,7 +14,7 @@ st.set_page_config(
 )
 
 # =========================================================
-# GEMINI SETUP
+# GEMINI
 # =========================================================
 
 api_key = st.secrets["GEMINI_API_KEY"]
@@ -36,7 +37,9 @@ if "messages" not in st.session_state:
 st.markdown("""
 <style>
 
-/* ---------- GLOBAL ---------- */
+/* =========================
+   GLOBAL
+========================= */
 
 .stApp {
     background: #080809;
@@ -48,8 +51,6 @@ st.markdown("""
     padding-top: 1rem;
     padding-bottom: 120px;
 }
-
-/* Hide Streamlit branding */
 
 #MainMenu {
     visibility: hidden;
@@ -63,14 +64,15 @@ header {
     background: transparent !important;
 }
 
-/* ---------- TOP BAR ---------- */
+/* =========================
+   HEADER
+========================= */
 
 .kaze-header {
     height: 55px;
 
     display: flex;
     align-items: center;
-    justify-content: space-between;
 
     border-bottom: 1px solid rgba(255,255,255,0.06);
 
@@ -96,8 +98,8 @@ header {
     background: #f1f1f1;
     color: #080809;
 
-    font-weight: 700;
     font-size: 14px;
+    font-weight: 700;
 }
 
 .kaze-title {
@@ -112,7 +114,9 @@ header {
     margin-left: 4px;
 }
 
-/* ---------- WELCOME ---------- */
+/* =========================
+   WELCOME
+========================= */
 
 .welcome {
     text-align: center;
@@ -124,6 +128,7 @@ header {
 .welcome-small {
     color: #777777;
     font-size: 13px;
+
     margin-bottom: 15px;
 }
 
@@ -143,13 +148,14 @@ header {
     font-size: 14px;
 }
 
-/* ---------- SUGGESTION CARDS ---------- */
+/* =========================
+   CARDS
+========================= */
 
 .cards {
     display: grid;
 
-    grid-template-columns:
-        repeat(4, 1fr);
+    grid-template-columns: repeat(4, 1fr);
 
     gap: 10px;
 
@@ -169,7 +175,7 @@ header {
 
     background: rgba(255,255,255,0.025);
 
-    transition: all 0.2s ease;
+    transition: 0.2s ease;
 }
 
 .card:hover {
@@ -183,22 +189,29 @@ header {
 
 .card-icon {
     font-size: 16px;
+
     margin-bottom: 10px;
 }
 
 .card-title {
     font-size: 13px;
+
     font-weight: 500;
+
     color: #dddddd;
 }
 
 .card-description {
     color: #666666;
+
     font-size: 11px;
+
     margin-top: 5px;
 }
 
-/* ---------- CHAT ---------- */
+/* =========================
+   CHAT
+========================= */
 
 [data-testid="stChatMessage"] {
     background: transparent !important;
@@ -209,7 +222,7 @@ header {
     padding-bottom: 12px;
 }
 
-/* Assistant message */
+/* Assistant messages */
 
 [data-testid="stChatMessage"]:has(
     [data-testid="chatAvatarIcon-assistant"]
@@ -223,22 +236,17 @@ header {
     margin-bottom: 8px;
 }
 
-/* User message */
-
-[data-testid="stChatMessage"]:has(
-    [data-testid="chatAvatarIcon-user"]
-) {
-    background: transparent !important;
-}
-
 /* Chat text */
 
 [data-testid="stChatMessage"] p {
     font-size: 14px;
+
     line-height: 1.7;
 }
 
-/* ---------- CHAT INPUT ---------- */
+/* =========================
+   INPUT
+========================= */
 
 [data-testid="stChatInput"] {
     border-top: none !important;
@@ -266,10 +274,13 @@ header {
     color: #666666 !important;
 }
 
-/* ---------- SIDEBAR ---------- */
+/* =========================
+   SIDEBAR
+========================= */
 
 section[data-testid="stSidebar"] {
     background: #0b0b0d;
+
     border-right:
         1px solid
         rgba(255,255,255,0.06);
@@ -277,17 +288,23 @@ section[data-testid="stSidebar"] {
 
 .sidebar-heading {
     font-size: 18px;
+
     font-weight: 600;
+
     margin-bottom: 20px;
 }
 
 .sidebar-description {
     color: #666666;
+
     font-size: 12px;
+
     line-height: 1.6;
 }
 
-/* ---------- MOBILE ---------- */
+/* =========================
+   MOBILE
+========================= */
 
 @media (max-width: 700px) {
 
@@ -346,18 +363,14 @@ with st.sidebar:
         "＋  New Chat",
         use_container_width=True
     ):
-
         st.session_state.messages = []
-
         st.rerun()
 
     if st.button(
         "Clear Conversation",
         use_container_width=True
     ):
-
         st.session_state.messages = []
-
         st.rerun()
 
     st.markdown("---")
@@ -366,13 +379,13 @@ with st.sidebar:
         """
         <div class="sidebar-description">
 
-        Kaze is your AI assistant.
+        Your AI assistant for
+        questions, coding, ideas,
+        learning and more.
 
         <br><br>
 
-        Ask questions, write code,
-        brainstorm ideas, or learn
-        something new.
+        Powered by Gemini.
 
         </div>
         """,
@@ -418,7 +431,6 @@ if not st.session_state.messages:
 
             </div>
 
-
             <div class="card">
 
                 <div class="card-icon">
@@ -435,7 +447,6 @@ if not st.session_state.messages:
 
             </div>
 
-
             <div class="card">
 
                 <div class="card-icon">
@@ -451,7 +462,6 @@ if not st.session_state.messages:
                 </div>
 
             </div>
-
 
             <div class="card">
 
@@ -480,13 +490,9 @@ if not st.session_state.messages:
 
 for message in st.session_state.messages:
 
-    with st.chat_message(
-        message["role"]
-    ):
+    with st.chat_message(message["role"]):
 
-        st.markdown(
-            message["content"]
-        )
+        st.markdown(message["content"])
 
 # =========================================================
 # CHAT INPUT
@@ -498,26 +504,20 @@ prompt = st.chat_input(
 
 if prompt:
 
-    # -------------------------
     # Add user message
-    # -------------------------
-
     st.session_state.messages.append({
         "role": "user",
         "content": prompt
     })
 
-    # -------------------------
-    # Show user message
-    # -------------------------
-
+    # Display user message
     with st.chat_message("user"):
 
         st.markdown(prompt)
 
-    # -------------------------
-    # Prepare conversation
-    # -------------------------
+    # =====================================================
+    # BUILD CONVERSATION
+    # =====================================================
 
     conversation = []
 
@@ -531,40 +531,64 @@ if prompt:
             f"{role}: {content}"
         )
 
-    full_prompt = "\n\n".join(
-        conversation
-    )
+    full_prompt = "\n\n".join(conversation)
 
-    # -------------------------
-    # Ask Gemini
-    # -------------------------
+    # =====================================================
+    # GEMINI RESPONSE
+    # =====================================================
 
     with st.chat_message("assistant"):
 
-        try:
+        answer = None
 
-            response = client.models.generate_content(
-                model=MODEL,
-                contents=full_prompt
-            )
+        # Try up to 3 times
+        for attempt in range(3):
 
-            answer = response.text
+            try:
 
-            st.markdown(answer)
+                response = client.models.generate_content(
+                    model=MODEL,
+                    contents=full_prompt
+                )
 
-        except Exception as e:
+                answer = response.text
 
-            answer = (
-                "Sorry, something went wrong.\n\n"
-                f"`{e}`"
-            )
+                break
 
-            st.markdown(answer)
+            except Exception as e:
 
-    # -------------------------
-    # Save response
-    # -------------------------
+                if attempt < 2:
 
+                    time.sleep(2)
+
+                else:
+
+                    error_text = str(e)
+
+                    if "503" in error_text:
+
+                        answer = (
+                            "Kaze is a little busy right now. "
+                            "Please try again in a moment."
+                        )
+
+                    elif "429" in error_text:
+
+                        answer = (
+                            "Kaze is temporarily rate-limited. "
+                            "Please try again shortly."
+                        )
+
+                    else:
+
+                        answer = (
+                            "Kaze couldn't complete that request "
+                            "right now. Please try again."
+                        )
+
+        st.markdown(answer)
+
+    # Save assistant response
     st.session_state.messages.append({
         "role": "assistant",
         "content": answer
