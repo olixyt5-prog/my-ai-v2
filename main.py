@@ -8,7 +8,7 @@ from google import genai
 
 st.set_page_config(
     page_title="Kaze AI",
-    page_icon="K",
+    page_icon="🧠",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -31,24 +31,18 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 
 # =========================================================
-# SIMPLE CLEAN CSS
+# CSS
 # =========================================================
 
 st.markdown("""
 <style>
 
-/* -----------------------------
-   PAGE
------------------------------ */
+/* PAGE */
 
 .stApp {
     background: #ffffff;
     color: #202123;
 }
-
-/* -----------------------------
-   MAIN CONTENT
------------------------------ */
 
 .block-container {
     max-width: 900px;
@@ -56,9 +50,7 @@ st.markdown("""
     padding-bottom: 120px;
 }
 
-/* -----------------------------
-   HEADER
------------------------------ */
+/* HEADER */
 
 .kaze-header {
     display: flex;
@@ -76,7 +68,7 @@ st.markdown("""
     width: 32px;
     height: 32px;
 
-    border-radius: 8px;
+    border-radius: 9px;
 
     display: flex;
     align-items: center;
@@ -86,24 +78,19 @@ st.markdown("""
     color: white;
 
     font-weight: 700;
-    font-size: 15px;
 }
 
 .kaze-name {
     font-size: 18px;
     font-weight: 600;
-    color: #202123;
 }
 
 .kaze-subtitle {
+    color: #999999;
     font-size: 12px;
-    color: #8e8e8e;
-    margin-left: 3px;
 }
 
-/* -----------------------------
-   WELCOME
------------------------------ */
+/* WELCOME */
 
 .welcome {
     text-align: center;
@@ -119,12 +106,9 @@ st.markdown("""
 
 .welcome p {
     color: #777777;
-    font-size: 15px;
 }
 
-/* -----------------------------
-   CHAT
------------------------------ */
+/* CHAT */
 
 [data-testid="stChatMessage"] {
     padding: 15px 5px !important;
@@ -132,48 +116,24 @@ st.markdown("""
     border: none !important;
 }
 
-/* User message */
-
 [data-testid="stChatMessage"]:has(
     [data-testid="chatAvatarIcon-user"]
 ) {
     background: #f7f7f8 !important;
-
     border-radius: 12px !important;
-
     margin: 5px 0;
 }
-
-/* Assistant message */
-
-[data-testid="stChatMessage"]:has(
-    [data-testid="chatAvatarIcon-assistant"]
-) {
-    background: white !important;
-
-    margin: 5px 0;
-}
-
-/* Text */
 
 [data-testid="stChatMessage"] p {
     font-size: 15px;
     line-height: 1.65;
 }
 
-/* -----------------------------
-   INPUT
------------------------------ */
-
-[data-testid="stChatInput"] {
-    padding-bottom: 20px;
-}
+/* INPUT */
 
 [data-testid="stChatInput"] > div {
     border: 1px solid #d9d9d9 !important;
-
     border-radius: 14px !important;
-
     background: white !important;
 
     box-shadow:
@@ -188,20 +148,55 @@ st.markdown("""
     color: #999999 !important;
 }
 
-/* -----------------------------
-   SIDEBAR
------------------------------ */
+/* THINKING */
+
+.thinking {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+
+    color: #777777;
+
+    font-size: 14px;
+
+    padding: 8px 0;
+}
+
+.brain {
+    font-size: 19px;
+
+    animation: brainPulse 1.2s infinite;
+}
+
+@keyframes brainPulse {
+
+    0% {
+        transform: scale(1);
+        opacity: 0.55;
+    }
+
+    50% {
+        transform: scale(1.18);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 0.55;
+    }
+
+}
+
+/* SIDEBAR */
 
 section[data-testid="stSidebar"] {
     background: #f7f7f8;
-
     border-right: 1px solid #e5e5e5;
 }
 
 .sidebar-title {
     font-size: 18px;
     font-weight: 600;
-
     margin-bottom: 20px;
 }
 
@@ -209,19 +204,13 @@ section[data-testid="stSidebar"] {
     color: #777777;
     font-size: 12px;
     line-height: 1.6;
-
     margin-top: 25px;
 }
 
-/* Buttons */
-
 .stButton > button {
     border-radius: 8px;
-
     border: 1px solid #dddddd;
-
     background: white;
-
     color: #333333;
 }
 
@@ -229,9 +218,7 @@ section[data-testid="stSidebar"] {
     background: #eeeeee;
 }
 
-/* -----------------------------
-   MOBILE
------------------------------ */
+/* MOBILE */
 
 @media (max-width: 700px) {
 
@@ -266,7 +253,7 @@ st.markdown("""
 
     <div class="kaze-name">
         Kaze
-        <span class="kaze-subtitle">AI</span>
+        <span class="kaze-subtitle"> AI</span>
     </div>
 
 </div>
@@ -287,14 +274,18 @@ with st.sidebar:
         "＋ New chat",
         use_container_width=True
     ):
+
         st.session_state.messages = []
+
         st.rerun()
 
     if st.button(
         "Clear chat",
         use_container_width=True
     ):
+
         st.session_state.messages = []
+
         st.rerun()
 
     st.markdown(
@@ -337,7 +328,7 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 # =========================================================
-# INPUT
+# CHAT INPUT
 # =========================================================
 
 prompt = st.chat_input(
@@ -346,20 +337,22 @@ prompt = st.chat_input(
 
 if prompt:
 
-    # Save user message
+    # -----------------------------------------------------
+    # USER MESSAGE
+    # -----------------------------------------------------
+
     st.session_state.messages.append({
         "role": "user",
         "content": prompt
     })
 
-    # Display user message
     with st.chat_message("user"):
 
         st.markdown(prompt)
 
-    # =====================================================
+    # -----------------------------------------------------
     # CONVERSATION
-    # =====================================================
+    # -----------------------------------------------------
 
     conversation = []
 
@@ -367,17 +360,42 @@ if prompt:
 
         role = message["role"].upper()
 
+        content = message["content"]
+
         conversation.append(
-            f"{role}: {message['content']}"
+            f"{role}: {content}"
         )
 
     full_prompt = "\n\n".join(conversation)
 
-    # =====================================================
-    # GEMINI
-    # =====================================================
+    # -----------------------------------------------------
+    # KAZE THINKING
+    # -----------------------------------------------------
 
     with st.chat_message("assistant"):
+
+        thinking = st.empty()
+
+        thinking.markdown(
+            """
+            <div class="thinking">
+
+                <span class="brain">
+                    🧠
+                </span>
+
+                <span>
+                    Kaze is thinking...
+                </span>
+
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        # -------------------------------------------------
+        # GEMINI
+        # -------------------------------------------------
 
         answer = None
 
@@ -425,9 +443,18 @@ if prompt:
                             "Please try again."
                         )
 
+        # -------------------------------------------------
+        # REPLACE THINKING WITH ANSWER
+        # -------------------------------------------------
+
+        thinking.empty()
+
         st.markdown(answer)
 
-    # Save response
+    # -----------------------------------------------------
+    # SAVE RESPONSE
+    # -----------------------------------------------------
+
     st.session_state.messages.append({
         "role": "assistant",
         "content": answer
