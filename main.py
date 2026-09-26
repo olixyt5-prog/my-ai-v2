@@ -1,6 +1,13 @@
 import streamlit as st
 import time
+import re
+import ast
+import operator
 from google import genai
+
+# =========================================================
+# KAZE SETTINGS
+# =========================================================
 
 st.set_page_config(
     page_title="Kaze AI",
@@ -8,26 +15,130 @@ st.set_page_config(
     layout="wide"
 )
 
-# -----------------------------
-# API KEY
-# -----------------------------
+MODEL = "gemini-3.8-flash"
 
 api_key = st.secrets["GEMINI_API_KEY"]
 
-MODEL = "gemini-3.8-flash"
+
+# =========================================================
+# SAFE CALCULATOR
+# =========================================================
+
+operators = {
+    ast.Add: operator.add,
+    ast.Sub: operator.sub,
+    ast.Mult: operator.mul,
+    ast.Div: operator.truediv,
+    ast.Pow: operator.pow,
+    ast.Mod: operator.mod,
+    ast.FloorDiv: operator.floordiv
+}
 
 
-# -----------------------------
-# CHAT HISTORY
-# -----------------------------
+def calculate_expression(expression):
+
+    expression = expression.replace(",", "")
+    expression = expression.replace("×", "*")
+    expression = expression.replace("÷", "/")
+
+    try:
+        tree = ast.parse(expression, mode="eval")
+        return evaluate_node(tree.body)
+
+    except Exception:
+        return None
+
+
+def evaluate_node(node):
+
+    if isinstance(node, ast.Constant):
+
+        if isinstance(node.value, (int, float)):
+            return node.value
+
+        raise ValueError()
+
+    if isinstance(node, ast.BinOp):
+
+        left = evaluate_node(node.left)
+        right = evaluate_node(node.right)
+
+        operation = operators.get(type(node.op))
+
+        if operation is None:
+            raise ValueError()
+
+        return operation(left, right)
+
+    if isinstance(node, ast.UnaryOp):
+
+        value = evaluate_node(node.operand)
+
+        if isinstance(node.op, ast.USub):
+            return -value
+
+        if isinstance(node.op, ast.UAdd):
+            return value
+
+    raise ValueError()
+
+
+def try_calculate(text):
+
+    cleaned = text.strip()
+
+    pattern = r"^[\d\s\+\-\*\/\%\(\)\.\,\×\÷]+$"
+
+    if re.fullmatch(pattern, cleaned):
+
+        result = calculate_expression(cleaned)
+
+        if result is not None:
+            return result
+
+    return None
+
+
+# =========================================================
+# SESSION MEMORY
+# =========================================================
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
 
-# -----------------------------
-# STYLE
-# -----------------------------
+# =========================================================
+# KAZE PERSONALITY / REASONING INSTRUCTIONS
+# =========================================================
+
+SYSTEM_PROMPT = """
+You are Kaze, a highly capable AI assistant.
+
+Your job is to give accurate, useful and intelligent answers.
+
+IMPORTANT RULES:
+
+1. Think carefully before answering.
+2. Do not invent facts.
+3. If you are uncertain, clearly say so.
+4. For difficult questions, break the problem into smaller parts.
+5. For mathematics, prioritize exact answers.
+6. For programming, provide working code and explain important parts.
+7. When the user is a beginner, explain complicated things simply.
+8. Remember the conversation and use previous messages when relevant.
+9. Do not repeat the user's question unnecessarily.
+10. Give the direct answer first, then explanation when useful.
+11. For large calculations, trust the calculator result supplied by the application.
+12. Never claim to have performed an action that you did not actually perform.
+13. Be friendly and natural, not robotic.
+
+You are Kaze AI.
+"""
+
+
+# =========================================================
+# STYLING
+# =========================================================
 
 st.markdown("""
 <style>
@@ -80,16 +191,15 @@ st.markdown("""
 .welcome p {
     color: #777777;
     font-size: 17px;
-
 }
 
 </style>
 """, unsafe_allow_html=True)
 
 
-# -----------------------------
+# =========================================================
 # HEADER
-# -----------------------------
+# =========================================================
 
 st.markdown("""
 <div class="kaze-header">
@@ -102,9 +212,9 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-# -----------------------------
+# =========================================================
 # SIDEBAR
-# -----------------------------
+# =========================================================
 
 with st.sidebar:
 
@@ -126,12 +236,12 @@ with st.sidebar:
 
     st.divider()
 
-    st.caption("Powered by Gemini")
+    st.caption("Kaze Smart Mode 🧠")
 
 
-# -----------------------------
+# =========================================================
 # WELCOME
-# -----------------------------
+# =========================================================
 
 if not st.session_state.messages:
 
@@ -143,9 +253,9 @@ if not st.session_state.messages:
     """, unsafe_allow_html=True)
 
 
-# -----------------------------
-# SHOW CHAT
-# -----------------------------
+# =========================================================
+# DISPLAY CHAT
+# =========================================================
 
 for message in st.session_state.messages:
 
@@ -154,29 +264,26 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 
-# -----------------------------
-# INPUT
-# -----------------------------
+# =========================================================
+# USER INPUT
+# =========================================================
 
 prompt = st.chat_input("Message Kaze...")
 
 
 if prompt:
 
-    # Save user message
     st.session_state.messages.append({
         "role": "user",
         "content": prompt
     })
 
 
-    # Show user message
     with st.chat_message("user"):
 
         st.markdown(prompt)
 
 
-    # Kaze
     with st.chat_message("assistant"):
 
         thinking = st.empty()
@@ -188,48 +295,60 @@ if prompt:
 
         try:
 
-            # Create a NEW client for this request
-            client = genai.Client(
-                api_key=api_key
-            )
+            # -------------------------------------------------
+            # EXACT CALCULATOR
+            # -------------------------------------------------
+
+            calculation = try_calculate(prompt)
+
+            if calculation is not None:
+
+                answer = str(calculation)
+
+            else:
+
+                # -------------------------------------------------
+                # GEMINI
+                # -------------------------------------------------
+
+                client = genai.Client(
+                    api_key=api_key
+                )
 
 
-            # Build conversation context
-            conversation = ""
+                conversation = SYSTEM_PROMPT + "\n\n"
 
-            for message in st.session_state.messages:
+                for message in st.session_state.messages:
 
-                if message["role"] == "user":
+                    if message["role"] == "user":
 
-                    conversation += (
-                        "User: "
-                        + message["content"]
-                        + "\n"
-                    )
+                        conversation += (
+                            "User: "
+                            + message["content"]
+                            + "\n"
+                        )
 
-                else:
+                    else:
 
-                    conversation += (
-                        "Kaze: "
-                        + message["content"]
-                        + "\n"
-                    )
-
-
-            conversation += "Kaze:"
+                        conversation += (
+                            "Kaze: "
+                            + message["content"]
+                            + "\n"
+                        )
 
 
-            # Send request
-            response = client.models.generate_content(
-                model=MODEL,
-                contents=conversation
-            )
+                conversation += "\nKaze:"
 
 
-            answer = response.text
+                response = client.models.generate_content(
+                    model=MODEL,
+                    contents=conversation
+                )
 
 
-            # Keep thinking visible briefly
+                answer = response.text
+
+
             elapsed = time.time() - start_time
 
             if elapsed < 0.7:
@@ -246,17 +365,27 @@ if prompt:
 
             thinking.empty()
 
-            st.error("Kaze couldn't answer.")
+            error_text = str(e)
 
-            st.write("### Actual error:")
+            if "429" in error_text:
 
-            st.code(str(e))
+                answer = (
+                    "🧠 Kaze has reached the current Gemini "
+                    "free-tier request limit. The code is working, "
+                    "but the AI service needs its quota to reset."
+                )
 
-            answer = "I couldn't answer that message."
+            else:
+
+                answer = "Kaze ran into an error."
+
+                st.code(error_text)
 
 
-        # Save Kaze response
-        st.session_state.messages.append({
-            "role": "assistant",
-            "content": answer
-        })
+            st.markdown(answer)
+
+
+    st.session_state.messages.append({
+        "role": "assistant",
+        "content": answer
+    })
